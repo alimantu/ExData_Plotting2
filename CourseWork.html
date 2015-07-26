@@ -71,19 +71,8 @@ dataSCC  &lt;- readRDS(&quot;./Source_Classification_Code.rds&quot;)</code></pre
 <div id="question-1" class="section level2">
 <h2>Question 1</h2>
 <p>Here we will plot the decreasing of the USA PM2.5 emmissions from 1999 to 2008. If you’d like to have this picture on your local computer, just del the comment sharp symbol and run the code.</p>
-<pre class="r"><code>library(dplyr)</code></pre>
-<pre><code>## Warning: package 'dplyr' was built under R version 3.2.1</code></pre>
-<pre><code>## 
-## Attaching package: 'dplyr'
-## 
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-## 
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union</code></pre>
-<pre class="r"><code>summary  &lt;- data %&gt;%
+<pre class="r"><code>library(dplyr)
+summary  &lt;- data %&gt;%
     group_by(year) %&gt;%
     summarise(emissions = sum(Emissions))
 #png(filename = &quot;plot1.png&quot;, width = 480, height = 480, units = &quot;px&quot;, bg = &quot;transparent&quot;)
@@ -107,9 +96,8 @@ with(summary, barplot(emissions, year, ylim = c(0, max(emissions)), ylab = &quot
 <div id="question-3" class="section level2">
 <h2>Question 3</h2>
 <p>Increases and decreases of the emissions by the <strong>type</strong> (point, nonpoint, onroad, nonroad) variable.</p>
-<pre class="r"><code>library(ggplot2)</code></pre>
-<pre><code>## Warning: package 'ggplot2' was built under R version 3.2.1</code></pre>
-<pre class="r"><code>data$type  &lt;- as.factor(data$type)
+<pre class="r"><code>library(ggplot2)
+data$type  &lt;- as.factor(data$type)
 summary  &lt;- data[data$fips == &quot;24510&quot;,] %&gt;%
     group_by(year, type) %&gt;%
     summarise(emissions = sum(Emissions))
@@ -126,14 +114,8 @@ ggplot(data = summary, aes(x = year, y = emissions, col = type, fill = type))+
 <div id="question-4" class="section level2">
 <h2>Question 4</h2>
 <p>Emissions from coal combusion-related sources.</p>
-<pre class="r"><code>library(data.table)</code></pre>
-<pre><code>## 
-## Attaching package: 'data.table'
-## 
-## The following objects are masked from 'package:dplyr':
-## 
-##     between, last</code></pre>
-<pre class="r"><code>data$Pollutant  &lt;- as.factor(data$Pollutant)
+<pre class="r"><code>library(data.table)
+data$Pollutant  &lt;- as.factor(data$Pollutant)
 data$year  &lt;-  as.factor(data$year)
 #dataCoalSCC  &lt;- dataSCC[dataSCC$EI.Sector %like% &quot;Coal&quot;,]
 dataCoalSCC  &lt;- filter(dataSCC, SCC.Level.One %like% &quot;Comb&quot;, EI.Sector %like% &quot;Coal&quot;)
