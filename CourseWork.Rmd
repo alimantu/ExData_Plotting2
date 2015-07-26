@@ -1,0 +1,102 @@
+#Course Project 2
+
+##Reading and viewing data.
+```{r, cache=TRUE}
+data  <- readRDS("./summarySCC_PM25.rds")
+dataSCC  <- readRDS("./Source_Classification_Code.rds")
+```
+
+##Question 1
+Here we will plot the decreasing of the USA PM2.5 emmissions from 1999 to 2008.
+If you'd like to have this picture on your local computer, just del the comment sharp symbol and run the code. 
+```{r}
+library(dplyr)
+summary  <- data %>%
+    group_by(year) %>%
+    summarise(emissions = sum(Emissions))
+#png(filename = "plot1.png", width = 480, height = 480, units = "px", bg = "transparent")
+with(summary, barplot(emissions, year, ylim = c(0, max(emissions)), ylab = "Emissions (tons)",
+                      names.arg = year, xlab = "Year", main = "Total emissions from PM2.5"))
+#dev.off()
+```
+
+##Question 2
+The same as the first, but with specified location - **Baltimore City**(fips == "24510")
+```{r}
+summary  <- data[data$fips == "24510",] %>%
+    group_by(year) %>%
+    summarise(emissions = sum(Emissions))
+#png(filename = "plot2.png", width = 480, height = 480, units = "px", bg = "transparent")
+with(summary, barplot(emissions, year, ylim = c(0, max(emissions)), ylab = "Emissions (tons)",
+                      names.arg = year, xlab = "Year", main = "Total emissions from PM2.5 in Baltimore City"))
+#dev.off()
+```
+
+##Question 3
+Increases and decreases of the emissions by the **type** (point, nonpoint, onroad, nonroad) variable.
+```{r}
+library(ggplot2)
+data$type  <- as.factor(data$type)
+summary  <- data[data$fips == "24510",] %>%
+    group_by(year, type) %>%
+    summarise(emissions = sum(Emissions))
+#png(filename = "plot3.png", width = 480, height = 480, units = "px", bg = "transparent")
+ggplot(data = summary, aes(x = year, y = emissions, col = type, fill = type))+
+    geom_line()+
+    geom_point()+
+    xlab("Year")+
+    ylab("Emissions (tons)")+
+    ggtitle("PM2.5 emissions in Baltimore City by the source type")
+#dev.off()
+```
+
+##Question 4
+Emissions from coal combusion-related sources.
+```{r}
+library(data.table)
+data$Pollutant  <- as.factor(data$Pollutant)
+data$year  <-  as.factor(data$year)
+#dataCoalSCC  <- dataSCC[dataSCC$EI.Sector %like% "Coal",]
+dataCoalSCC  <- filter(dataSCC, SCC.Level.One %like% "Comb", EI.Sector %like% "Coal")
+dataCoal  <- data[data$SCC %in% dataCoalSCC$SCC,]
+summary  <- dataCoal %>%
+    group_by(year) %>%
+    summarise(emissions = sum(Emissions))
+#png(filename = "plot4.png", width = 480, height = 480, units = "px", bg = "transparent")
+ggplot(data = summary, aes(x = year, y = emissions))+
+    geom_bar(stat = "identity", width = .7, fill = "light blue", col = "Black")+
+    xlab("Year") + ylab("Emissions (tons)") + ggtitle("PM2.5 emissions from coal combusion-related sources in USA")
+#dev.off()
+```
+
+##Question 5
+Changes from motor vehicle sources from 1999-2008 in **Baltimore City**
+```{r}
+dataVehiclesSCC  <- filter(dataSCC, EI.Sector %like% "Vehicles")
+dataVehicles  <- data[data$SCC %in% dataVehiclesSCC$SCC,]
+summary  <- dataVehicles[dataVehicles$fips == "24510",] %>%
+    group_by(year) %>%
+    summarise(emissions = sum(Emissions))
+#png(filename = "plot5.png", width = 480, height = 480, units = "px", bg = "transparent")
+ggplot(data = summary, aes(x = year, y = emissions))+
+    geom_bar(stat = "identity", width = .7, fill = "light blue", col = "Black")+
+    xlab("Year") + ylab("Emissions (tons)") + ggtitle("PM2.5 emissions from motor vehicle sources in Baltimore City, USA")
+#dev.off()
+```
+
+##Question 6
+Comparing the **Los Angeles County** with **Baltimore City** by the emmissions amounth.
+```{r}
+summary  <- dataVehicles[dataVehicles$fips %in% c("24510", "06037"),] %>%
+    group_by(year, fips) %>%
+    summarise(emissions = sum(Emissions))
+summary  <- mutate(summary, Location = ifelse(fips == "24510", "Baltimore City", "Los Angeles County"))
+#png(filename = "plot6.png", width = 480, height = 480, units = "px", bg = "transparent")
+ggplot(data = summary, aes(x = year, y = emissions, col = Location, group = Location))+
+    geom_line() +
+    geom_point() +
+    xlab("Year") + 
+    ylab("Emissions (tons)") + 
+    ggtitle("PM2.5 emissions from motor vehicle sources in USA")
+#dev.off()
+```
